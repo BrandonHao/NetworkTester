@@ -24,5 +24,26 @@ namespace NetworkTester
         {
             InitializeComponent();
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Button source = (Button)sender;
+            switch(source.Name)
+            {
+                case "StartButton":
+                    if (ServerBox.Text != null && !ServerBox.Text.Equals(""))
+                        new PingTest(ServerBox.Text, 0, 0);
+                    else
+                        new PingTest(HintText.Text, 0, 0);
+                    break;
+
+                case "SaveButton":
+                    break;
+
+                case "ExitButton":
+                    Application.Current.Shutdown();
+                    break;
+            }
+        }
     }
 }

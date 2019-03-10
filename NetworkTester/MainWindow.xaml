@@ -5,8 +5,29 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NetworkTester"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="300" Width="464.844">
+    <Window.Resources>
+        <local:TextInputToVisibilityConverter x:Key="TextInputToVisibilityConverter" />
+    </Window.Resources>
     <Grid>
-        
+        <Canvas>
+            <Rectangle Fill="#FFC8C8FD" HorizontalAlignment="Left" Height="269" VerticalAlignment="Top" Width="457"/>
+            <Label Content="Enter a Server:" Canvas.Left="35" Canvas.Top="32" FontFamily="Nirmala UI Semilight" FontSize="14"/>
+            <Button x:Name="StartButton" Click="Button_Click" Content="Start" Canvas.Left="39" Canvas.Top="223" Width="75" FontFamily="Nirmala UI Semilight"/>
+            <Button x:Name="ExitButton" Click="Button_Click" Content="Exit" Canvas.Left="351" Canvas.Top="223" Width="75" FontFamily="Nirmala UI Semilight"/>
+            <Button x:Name="SaveButton" Click="Button_Click" Content="Save" Canvas.Left="271" Canvas.Top="223" Width="75" FontFamily="Nirmala UI Semilight"/>
+            <Grid/>
+            <TextBox x:Name="ServerBox" Text="" Height="23" Canvas.Left="35" TextWrapping="Wrap" Canvas.Top="66" Width="387" FontFamily="Nirmala UI Semilight" FontSize="14"/>
+            <TextBlock x:Name="HintText" MinWidth="100" Text="www.google.com" FontFamily="Nirmala UI Semilight"
+                   Foreground="LightSteelBlue" Height="16" Canvas.Left="42" Canvas.Top="69" Width="100">
+                <TextBlock.Visibility>
+                    <MultiBinding Converter="{StaticResource TextInputToVisibilityConverter}">
+                        <Binding ElementName="ServerBox" Path="Text.IsEmpty"/>
+                        <Binding ElementName="ServerBox" Path="IsFocused"/>
+                    </MultiBinding>
+                </TextBlock.Visibility>
+            </TextBlock>
+        </Canvas>
+
     </Grid>
 </Window>
