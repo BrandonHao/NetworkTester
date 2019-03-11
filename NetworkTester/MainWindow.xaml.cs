@@ -20,6 +20,8 @@ namespace NetworkTester
     /// </summary>
     public partial class MainWindow : Window
     {
+        private BaseThread PingingThread, PacketThread;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -32,18 +34,39 @@ namespace NetworkTester
             {
                 case "StartButton":
                     if (ServerBox.Text != null && !ServerBox.Text.Equals(""))
-                        new PingTest(ServerBox.Text, 0, 0);
+                    {
+                        PingingThread = new PingTest(ServerBox.Text, 10, 100, 3000);
+                        PacketThread = new PacketTest(ServerBox.Text, 100, 100, 3000);
+                        
+                    }
                     else
-                        new PingTest(HintText.Text, 0, 0);
+                    {
+                        PingingThread = new PingTest(HintText.Text, 10, 100, 3000);
+                        PacketThread = new PacketTest(HintText.Text, 100, 100, 3000);
+                    }
+                    PingingThread.Done += ThreadDone;
+                    PacketThread.Done += ThreadDone;
+                    PingingThread.Start();
                     break;
-
-                case "SaveButton":
-                    break;
-
+                    
                 case "ExitButton":
+                    if(PingingThread != null && PingingThread.IsAlive)
+                    {
+                        PingingThread.Kill = true;
+                    }
+                    if (PacketThread != null && PacketThread.IsAlive)
+                    {
+                        PacketThread.Kill = true;
+                    }
+                    while (PingingThread.IsAlive) { }
                     Application.Current.Shutdown();
                     break;
             }
+        }
+
+        public void ThreadDone(object sender, EventArgs e)
+        {
+            PacketThread.Start();
         }
     }
 }
