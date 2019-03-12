@@ -26,11 +26,30 @@ namespace NetworkTester
 
         public override void RunThread()
         {
-            Tasks.StartNew(() => {
-                Console.WriteLine("Pinging {0}: {0} times", Server, Pings);
-                GetLoss(Server, Pings);
-                SaveToExcel();
-            }, Token);
+            void work()
+            {
+                Timer.Reset();
+                Timer.Start();
+                long time;
+                for (int i = 0; i < 10; i++)
+                {
+                    Console.WriteLine("Pinging {0}: {0} times", Server, Pings);
+                    GetLoss(Server, Pings);
+                    time = Timer.ElapsedMilliseconds;
+                    while (Timer.ElapsedMilliseconds - time < 60000)
+                    {
+                        if (Kill)
+                        {
+                            return;
+                        }
+                    }
+                }
+                
+            }
+            work();
+            SaveToExcel();
+            if(!Kill)
+                Finished("packet");
         }
 
         public PacketTest(string server, int pings, int delay, int timeOut)
@@ -59,7 +78,6 @@ namespace NetworkTester
             
             string data = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
             byte[] buffer = Encoding.ASCII.GetBytes(data);
-            Timer.Start();
             for (int i = 0; i < pingAmount; i++)
             {
                 if (Kill)
@@ -82,7 +100,10 @@ namespace NetworkTester
 
         private void SaveToExcel()
         {
-            FileInfo file = new FileInfo(@"C:\Users\brandon.h\Documents\test2.xlsx");
+            string time = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+            time = time.Replace(":", "-");
+            string path = Directory.GetCurrentDirectory() + @"\" + "data" + time + ".xlsx";
+            FileInfo file = new FileInfo(path);
             Console.WriteLine("Saving Data Do Not Exit!");
             using (ExcelPackage p = new ExcelPackage(file))
             {

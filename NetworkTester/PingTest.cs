@@ -18,20 +18,36 @@ namespace NetworkTester
         private readonly int Pings, Delay, TimeOut;
         private readonly List<long> TimeStamps;
         private readonly List<PingReply> Responses;
-        private readonly CancellationTokenSource Source;
-        private readonly CancellationToken Token;
-        private readonly TaskFactory Tasks;
+        private readonly Stopwatch TotalTime;
 
         public override void RunThread()
         {
-            Tasks.StartNew(() => {
+            void work()
+            {
                 if (InitTest())
                 {
-                    RunTest();
-                    SaveToExcel();
-                    Finished();
+                    TotalTime.Reset();
+                    TotalTime.Start();
+                    long time;
+                    for (int i = 0; i < 1; i++)
+                    {
+                        RunTest();
+                        time = TotalTime.ElapsedMilliseconds;
+                        while (TotalTime.ElapsedMilliseconds - time < 6)
+                        {
+                            Sleep(20);
+                            if (Kill)
+                            {
+                                return;
+                            }
+                        }
+                    }
                 }
-            }, Token);
+            }
+            work();
+            SaveToExcel();
+            if(!Kill)
+                Finished("ping");
         }
 
         public PingTest(string server, int pings, int delay, int timeOut)
@@ -39,9 +55,7 @@ namespace NetworkTester
             Pinger = new Ping();
             Responses = new List<PingReply>();
             TimeStamps = new List<long>();
-            Source = new CancellationTokenSource();
-            Tasks = new TaskFactory(Token);
-            Token = Source.Token;
+            TotalTime = new Stopwatch();
             Kill = false;
             Server = server;
             Pings = pings;
@@ -67,7 +81,6 @@ namespace NetworkTester
                     }
                     else if (Kill)
                     {
-                        Source.Cancel();
                         return false;
                     }
                 }
@@ -84,17 +97,14 @@ namespace NetworkTester
         private void RunTest()
         {
             Stopwatch timer = new Stopwatch();
-            Stopwatch totalTime = new Stopwatch();
             Console.WriteLine("Running Ping Test");
             int count = 0;
             timer.Reset();
-            totalTime.Reset();
             while (count < Pings)
             {
                 timer.Restart();
                 if (Kill)
                 {
-                    Source.Cancel();
                     return;
                 }
                 timer.Start();
@@ -116,7 +126,7 @@ namespace NetworkTester
                     }
                 }
                 Responses.Add(r);
-                TimeStamps.Add(totalTime.ElapsedMilliseconds);
+                TimeStamps.Add(TotalTime.ElapsedMilliseconds);
                 Thread.Sleep(Delay);
                 count++;
             }
@@ -124,7 +134,10 @@ namespace NetworkTester
 
         private void SaveToExcel()
         {
-            FileInfo file = new FileInfo(@"C:\Users\brandon.h\Documents\test.xlsx");
+            string time = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+            time = time.Replace(":", "-");
+            string path = Directory.GetCurrentDirectory() + @"\" + "data" + time + ".xlsx";
+            FileInfo file = new FileInfo(path);
             Console.WriteLine("Saving Data Do Not Exit!");
             using (ExcelPackage p = new ExcelPackage(file))
             {

@@ -35,14 +35,14 @@ namespace NetworkTester
                 case "StartButton":
                     if (ServerBox.Text != null && !ServerBox.Text.Equals(""))
                     {
-                        PingingThread = new PingTest(ServerBox.Text, 10, 100, 3000);
-                        PacketThread = new PacketTest(ServerBox.Text, 100, 100, 3000);
+                        PingingThread = new PingTest(ServerBox.Text, 1, 5, 3000);
+                        PacketThread = new PacketTest(ServerBox.Text, 10, 500, 3000);
                         
                     }
                     else
                     {
-                        PingingThread = new PingTest(HintText.Text, 10, 100, 3000);
-                        PacketThread = new PacketTest(HintText.Text, 100, 100, 3000);
+                        PingingThread = new PingTest(HintText.Text, 1, 5, 3000);
+                        PacketThread = new PacketTest(HintText.Text, 10, 500, 3000);
                     }
                     PingingThread.Done += ThreadDone;
                     PacketThread.Done += ThreadDone;
@@ -66,7 +66,8 @@ namespace NetworkTester
 
         public void ThreadDone(object sender, EventArgs e)
         {
-            PacketThread.Start();
+            if(((string)sender).Equals("ping"))
+                PacketThread.Start();
         }
     }
 }

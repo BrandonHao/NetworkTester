@@ -17,13 +17,13 @@ namespace NetworkTester
         public void Start() => _thread.Start();
         public void Join() => _thread.Join();
         public bool IsAlive => _thread.IsAlive;
-
+        public void Sleep(int millis) => Thread.Sleep(millis);
 
         public abstract void RunThread();
-        public void Finished()
+        public void Finished(string type)
         {
             Console.WriteLine("Test Complete!");
-            Done(null, new EventArgs());
+            Done(type, new EventArgs());
         }
     }
 }
